@@ -1,0 +1,43 @@
+# File location: ~/.lighter.yaml
+# This file describes the environments that lighter will manage.
+# Each environment has at least these properties:
+#  * type: "network", "traefik" or "docker-compose"
+#  * name: The name of the environment in one lowercase word. This name is used when you invoke Lighter on the
+#    commandline.
+#  * description: A short description (one line) of the environment. This will be displayed in Lighter's output.
+#  * dependencies: A list of environment names that the environment depends on. Lighter uses this to (re)start and stop
+#    your environments in the correct order.
+#
+# You can define as many environments as you like.
+
+environments:
+  # To allow several projects to communicate, lighter can define a docker network.
+  - type: network
+    name: net
+    description: 'Public network'
+    dependencies: {  }
+    networkName: public
+
+  # To allow several projects to share port 80, Traefik can start a proxy on this port and route traffic based on domain
+  # name.
+  - type: traefik
+    name: traefik
+    description: 'traefik network proxy'
+    dependencies:
+      - net
+
+  # A docker-compose environment
+  - type: docker-compose
+    name: project
+    description: 'My Development Project'
+    dependencies:
+      - traefik
+    # The path defines the directory where the project is located. Lighter expects docker-compose.yaml (or
+    # docker-compose.yml) to be in this directory.
+    path: /home/my-name/my-projects-folder/my-development-project
+    # A list of containers that Lighter should manage. You might want to omit containers that perform tasks that only
+    # need to be run once, for example, containers that build assets or install the project's dependencies.
+    containers:
+      - database-container
+      - application-container
+      - webserver-container

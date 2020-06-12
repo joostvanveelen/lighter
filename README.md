@@ -23,18 +23,17 @@ You can also build Lighter yourself:
 
 ## 3. Configuration
 
-In order to start using Lighter, it needs to know where your environments are. You can download a predefined
-configuration file from the Downloads section, or create your own. The two sections below describe each option. Pick
+In order to start using Lighter, it needs to know where your environments are. You can copy and edit the sample
+configuration file .lighter.yaml.dist, or create your own. The two sections below describe each option. Pick
 one of these options to configure Lighter.   
 
 ### 3.1. Predefined configuration
 
-This section describes how to use the predefined configuration file. If you want to create your own configuration file,
+This section describes how to use the sample configuration file. If you want to create your own configuration file,
 skip this section and read section 3.2 instead. 
 
-* Download the predefined configuration file from https://bitbucket.org/dokkie/lighter/downloads/.lighter.yaml
-* Move the file to .lighter.phar in your home directory.
-* Edit the file and replace all instances of "/my-projects-folder/" with the actual path to your projects.
+* Copy the sample configuiration file ".lighter.yaml.dist" to ".lighter.yaml" in your home directory.
+* Edit the copied file and add your own projects.
 
 Enjoy Lighter!
 
@@ -45,8 +44,7 @@ skip this section and read section 3.1 instead.
 
 You can use the "environment:add" command to register your environments with Lighter. All settings are stored in
 ~/.lighter.yaml. You can use your favorite editor to make manual modifications to this file if needed. See
-See https://bitbucket.org/dokkie/lighter/src/master/.lighter.yaml.dist for a explanation of the configuation's file
-options. 
++See .lighter.yaml.dist for a explanation of the configuation's file options. 
 
 Enjoy Lighter!
 

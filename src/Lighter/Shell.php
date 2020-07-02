@@ -30,7 +30,7 @@ class Shell
     {
         $this->output = [];
         $this->status = 0;
-        exec($command . ' 2>&1', $this->output, $this->status);
+        exec("bash -c \"{$command}\" 2>&1", $this->output, $this->status);
 
         return $this->status;
     }

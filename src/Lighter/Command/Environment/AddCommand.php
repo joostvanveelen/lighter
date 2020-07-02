@@ -3,6 +3,7 @@
 namespace Lighter\Command\Environment;
 
 use Lighter\Configuration;
+use Lighter\Shell;
 use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -156,6 +157,7 @@ class AddCommand extends Command
             $givenPath = $helper->ask($input, $output, $pathQuestion);
             try {
                 $path = $this->validatePath($givenPath);
+                $services = $this->getDockerComposeServices($path);
             } catch (RuntimeException $e) {
                 $output->writeln('<error>' . $e->getMessage() . '</error>');
             }
@@ -169,7 +171,6 @@ class AddCommand extends Command
 
         $config['path'] = $path;
 
-        $services = $this->getDockerComposeServices($path);
         $containers = new ChoiceQuestion(
             'Which containers need to be started (comma separate multiple options):',
             array_merge(['[all]'], $services)
@@ -241,11 +242,12 @@ class AddCommand extends Command
      */
     private function getDockerComposeServices(string $path): array
     {
-        if (file_exists("{$path}/docker-compose.yml")) {
-            $dockerCompose = Yaml::parseFile("{$path}/docker-compose.yml");
-        } else {
-            $dockerCompose = Yaml::parseFile("{$path}/docker-compose.yaml");
+        chdir($path);
+        $shell = new Shell();
+        if ($shell->exec('docker-compose config') !== 0) {
+            throw new RuntimeException('Error while retrieving docker-compose configuration: ' . $shell->getOutput());
         }
+        $dockerCompose = Yaml::parse($shell->getOutput());
         $services = $dockerCompose['services'] ?? [];
 
         return array_keys($services);

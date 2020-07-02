@@ -11,15 +11,11 @@ services it depends on, in one simple command.
 
 ## 2. Installation
 
-* Download Lighter: https://bitbucket.org/dokkie/lighter/downloads/lighter.phar
+* Clone the repository `git clone git@github.com:joostvanveelen/lighter.git`
+* Build the phar file by running `php build.php`. The phar file will be created in "build/lighter.phar"
 * (optional, but recommended) Place "lighter.phar" in a folder that's in your path.
   like "/usr/local/bin" or "~/bin". You can also rename the file or create a
-  symlink to the file in a bin folder.
-
-You can also build Lighter yourself:
-
-* Clone the repository
-* Build the phar file by running "php build.php". The phar file will be created in "build/lighter.phar"
+  symlink to the phar file in a bin folder.
 
 ## 3. Configuration
 
@@ -32,7 +28,7 @@ one of these options to configure Lighter.
 This section describes how to use the sample configuration file. If you want to create your own configuration file,
 skip this section and read section 3.2 instead. 
 
-* Copy the sample configuiration file ".lighter.yaml.dist" to ".lighter.yaml" in your home directory.
+* Copy the sample configuration file ".lighter.yaml.dist" to ".lighter.yaml" in your home directory.
 * Edit the copied file and add your own projects.
 
 Enjoy Lighter!

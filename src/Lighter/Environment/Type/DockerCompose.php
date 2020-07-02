@@ -369,7 +369,7 @@ class DockerCompose extends BaseType implements EnvironmentInterface, BuildInter
 
         foreach ($services as $service) {
             $serviceState = EnvironmentInterface::STATUS_FAILED;
-            if ($service->getState() === 'Up') {
+            if (trim(substr($service->getState(), 0, 3)) === 'Up') {
                 $serviceState = EnvironmentInterface::STATUS_STARTED;
             }
             if ($service->getState() === 'Exit 0') {

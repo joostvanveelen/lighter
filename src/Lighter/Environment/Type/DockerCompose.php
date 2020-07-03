@@ -5,7 +5,6 @@ namespace Lighter\Environment\Type;
 use Lighter\Environment\BuildInterface;
 use Lighter\Environment\EnvironmentInterface;
 use Lighter\Environment\InitInterface;
-use Lighter\Environment\ShellInterface;
 use Lighter\Environment\Type\DockerCompose\OutputParser;
 use Lighter\Shell;
 use RuntimeException;
@@ -16,7 +15,7 @@ use Symfony\Component\Yaml\Yaml;
  *
  * @package Lighter\Environment\Type
  */
-class DockerCompose extends BaseType implements EnvironmentInterface, BuildInterface, InitInterface, ShellInterface
+class DockerCompose extends BaseType implements EnvironmentInterface, BuildInterface, InitInterface
 {
     /**
      * @var OutputParser
@@ -37,11 +36,6 @@ class DockerCompose extends BaseType implements EnvironmentInterface, BuildInter
      * @var array
      */
     private $initContainers;
-
-    /**
-     * @var string|null
-     */
-    private $shell;
 
     /**
      * @var array|null
@@ -66,21 +60,16 @@ class DockerCompose extends BaseType implements EnvironmentInterface, BuildInter
     /**
      * Environment constructor.
      *
+     * @param Shell $shell
      * @param array $config
      */
-    public function __construct(array $config)
+    public function __construct(Shell $shell, array $config)
     {
-        parent::__construct($config);
+        parent::__construct($shell, $config);
         $this->outputParser = new OutputParser();
         $this->path = $config['path'] ?? '';
         $this->containers = $config['containers'] ?? [];
         $this->initContainers = $config['initContainers'] ?? [];
-        $shell = $config['shell'] ?? null;
-        if ($shell && in_array($shell, $this->containers, true)) {
-            $this->shell = $shell;
-        } else {
-            $this->shell = null;
-        }
     }
 
     /**
@@ -107,9 +96,9 @@ class DockerCompose extends BaseType implements EnvironmentInterface, BuildInter
             chdir($this->path);
             if ($this->hasSisters() && $this->hasOtherRunningContainers()) {
                 $containers = implode(' ', $this->containers);
-                $this->getShell()->exec("docker-compose stop {$containers}");
+                $this->shell->exec("docker-compose stop {$containers}");
             } else {
-                $this->getShell()->exec('docker-compose down');
+                $this->shell->exec('docker-compose down');
             }
         }
         $this->resetState();
@@ -188,34 +177,6 @@ class DockerCompose extends BaseType implements EnvironmentInterface, BuildInter
     public function hasError(): bool
     {
         return $this->hasContainerWithStatus(EnvironmentInterface::STATUS_FAILED);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function canShell(): bool
-    {
-        return $this->shell !== null;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function run(string $command): Shell
-    {
-        if ($this->shell === null) {
-            throw new RuntimeException('Shell is not supported on this environment.');
-        }
-        $status = $this->getStatus();
-        if ($status[$this->shell] !== EnvironmentInterface::STATUS_STARTED) {
-            throw new RuntimeException('The container for shell is not running.');
-        }
-        chdir($this->path);
-        
-        $shell = $this->getShell();
-        $shell->passthru("docker-compose exec {$this->shell} {$command}");
-        
-        return $shell;
     }
 
     /**

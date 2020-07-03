@@ -10,6 +10,11 @@ namespace Lighter;
 class Shell
 {
     /**
+     * @var array
+     */
+    private $config;
+
+    /**
      * @var int
      */
     private $status = 0;
@@ -18,6 +23,16 @@ class Shell
      * @var array
      */
     private $output = [];
+
+    /**
+     * Shell constructor.
+     *
+     * @param array|null $config
+     */
+    public function __construct(?array $config)
+    {
+        $this->setConfig($config);
+    }
 
     /**
      * Execute an external program.
@@ -30,7 +45,18 @@ class Shell
     {
         $this->output = [];
         $this->status = 0;
-        exec("bash -c \"{$command}\" 2>&1", $this->output, $this->status);
+
+        //prefix the preExec if it's specified
+        $preExec = $this->config['preExec'];
+        if ($preExec !== null) {
+            if (substr($preExec, -2) !== '&&') {
+                $preExec .= ' &&';
+            }
+            $command = $preExec . ' ' . $command;
+        }
+
+        exec("bash -c \"{$command}\" 2>/dev/null", $this->output, $this->status);
+
 
         return $this->status;
     }
@@ -86,5 +112,15 @@ class Shell
     public function getOutputLines(): array
     {
         return $this->output;
+    }
+
+    /**
+     * @param array|null $config
+     */
+    private function setConfig(?array $config)
+    {
+        $this->config = [
+            'preExec' => $config['preExec'] ?? null,
+        ];
     }
 }

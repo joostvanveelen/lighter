@@ -3,7 +3,7 @@
 namespace Lighter\Command\Self;
 
 use Lighter\Configuration;
-use Lighter\ShellTrait;
+use Lighter\Shell;
 use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -17,12 +17,15 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class UpdateCommand extends Command
 {
-    use ShellTrait;
-
     /**
      * @var Configuration
      */
     private $configuration;
+
+    /**
+     * @var Shell
+     */
+    private $shell;
 
     /**
      * @var string|null The default command name
@@ -31,11 +34,14 @@ class UpdateCommand extends Command
 
     /**
      * SelfUpdateCommand constructor.
+     *
      * @param Configuration $configuration
+     * @param Shell         $shell
      */
-    public function __construct(Configuration $configuration)
+    public function __construct(Configuration $configuration, Shell $shell)
     {
         $this->configuration = $configuration;
+        $this->shell = $shell;
         parent::__construct();
     }
 
@@ -107,7 +113,7 @@ class UpdateCommand extends Command
      */
     private function getCommitHash($repository, $branch): ?string
     {
-        $shell = $this->getShell();
+        $shell = new Shell(null);
         $shell->exec("git ls-remote {$repository}");
         foreach ($shell->getOutputLines() as $line) {
             [$commitHash, $ref] = preg_split('/\s+/', $line);
@@ -130,7 +136,6 @@ class UpdateCommand extends Command
      */
     private function build(OutputInterface $output, string $repository, string $commitHash): string
     {
-        $shell = $this->getShell();
         $tempDir = sys_get_temp_dir() . '/lighter_' . substr(md5(microtime()), 0, 8);
         if (file_exists($tempDir)) {
             throw new RuntimeException("Directory '{$tempDir}' already exists");
@@ -140,16 +145,16 @@ class UpdateCommand extends Command
         }
 
         $output->write('Cloning Lighter repository...');
-        $shell->exec("cd {$tempDir} && git clone -q {$repository} . && git checkout {$commitHash}");
-        if ($shell->getStatus() !== 0) {
-            throw new RuntimeException($shell->getOutput());
+        $this->shell->exec("cd {$tempDir} && git clone -q {$repository} . && git checkout {$commitHash}");
+        if ($this->shell->getStatus() !== 0) {
+            throw new RuntimeException($this->shell->getOutput());
         }
         $output->writeln(' Done');
 
         $output->write('Building Lighter...');
-        $shell->exec("cd {$tempDir} && php build.php");
-        if ($shell->getStatus() !== 0) {
-            throw new RuntimeException($shell->getOutput());
+        $this->shell->exec("cd {$tempDir} && php build.php");
+        if ($this->shell->getStatus() !== 0) {
+            throw new RuntimeException($this->shell->getOutput());
         }
         $output->writeln(' Done');
 
@@ -166,7 +171,6 @@ class UpdateCommand extends Command
      */
     private function selfUpdate(OutputInterface $output, string $tempDir): void
     {
-        $shell = $this->getShell();
         $targetFile = realpath($_SERVER['SCRIPT_FILENAME']);
         $output->write('Installing Lighter...');
         if (substr($targetFile, -4) === '.php') {
@@ -179,9 +183,9 @@ class UpdateCommand extends Command
         }
 
         $output->write('Cleaning up...');
-        $shell->exec("rm -rf {$tempDir}");
-        if ($shell->getStatus() !== 0) {
-            throw new RuntimeException($shell->getOutput());
+        $this->shell->exec("rm -rf {$tempDir}");
+        if ($this->shell->getStatus() !== 0) {
+            throw new RuntimeException($this->shell->getOutput());
         }
         $output->writeln(' Done');
     }

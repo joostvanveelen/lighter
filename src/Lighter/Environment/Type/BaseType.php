@@ -3,7 +3,7 @@
 namespace Lighter\Environment\Type;
 
 use Lighter\Environment\EnvironmentInterface;
-use Lighter\ShellTrait;
+use Lighter\Shell;
 
 /**
  * Base environment type, managing metadata such as name, description, etc.
@@ -12,7 +12,10 @@ use Lighter\ShellTrait;
  */
 class BaseType
 {
-    use ShellTrait;
+    /**
+     * @var Shell
+     */
+    protected $shell;
 
     /**
      * @var string
@@ -32,16 +35,23 @@ class BaseType
     /**
      * AbstractEnvironment constructor.
      *
+     * @param Shell $shell
      * @param array $config
      */
-    public function __construct(array $config)
+    public function __construct(Shell $shell, array $config)
     {
+        $this->shell = $shell;
         $name = $config['name'] ?? $config['type'];
         $description = $config['description'] ?? $name;
         $dependencies = $config['dependencies'] ?? [];
         $this->name = $name;
         $this->description = $description;
         $this->dependencies = $dependencies;
+    }
+
+    protected function getShell(): Shell
+    {
+        return $this->shell;
     }
 
     /**

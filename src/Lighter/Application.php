@@ -6,9 +6,7 @@ use Lighter\Command\BuildCommand;
 use Lighter\Command\Environment\AddCommand;
 use Lighter\Command\Environment\ListCommand;
 use Lighter\Command\Environment\RemoveCommand;
-use Lighter\Command\ExecCommand;
 use Lighter\Command\RestartCommand;
-use Lighter\Command\RunCommand;
 use Lighter\Command\Self\UpdateCommand;
 use Lighter\Command\StatusCommand;
 use Lighter\Command\StartCommand;
@@ -29,12 +27,15 @@ class Application extends ConsoleApplication
      */
     public function configure(): void
     {
-        $configuration = new Configuration();
+        $home = getenv('HOME');
+        $configurationFile = "{$home}/.lighter.yaml";
+        $configuration = new Configuration($configurationFile);
+        $shell = new Shell($configuration->getShellConfig());
 
         $environmentManager = new EnvironmentManager();
         $environmentsConfig = $configuration->getEnvironmentsConfig();
         foreach ($environmentsConfig as $environmentConfig) {
-            $environmentManager->addEnvironment(EnvironmentFactory::buildEnvironment($environmentConfig));
+            $environmentManager->addEnvironment(EnvironmentFactory::buildEnvironment($shell, $environmentConfig));
         }
 
         //commands to manage the environment status
@@ -42,16 +43,14 @@ class Application extends ConsoleApplication
         $this->add(new StartCommand($environmentManager));
         $this->add(new StatusCommand($environmentManager));
         $this->add(new RestartCommand($environmentManager));
-        $this->add(new ExecCommand($environmentManager));
-//        $this->add(new RunCommand($environmentManager));
         $this->add(new StopCommand($environmentManager));
 
         //commands to manage the environment config
-        $this->add(new AddCommand($configuration));
+        $this->add(new AddCommand($configuration, $shell));
         $this->add(new ListCommand($configuration));
         $this->add(new RemoveCommand($configuration));
 
         //other commands
-        $this->add(new UpdateCommand($configuration));
+        $this->add(new UpdateCommand($configuration, $shell));
     }
 }

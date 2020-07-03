@@ -11,6 +11,18 @@ services it depends on, in one simple command.
 
 ## 2. Installation
 
+### 2.1 Runtime requirements
+
+* php 7.2 (with xml and mbstring extensions) `apt-get install -y php php-xml php-mbstring`
+
+### 2.2 Build requirements
+
+* git: `apt-get install -y git`'
+* php configured to write phar files (`phar.readonly = off` in php.ini)
+* [composer](https://getcomposer.org/) 
+
+### 2.3 Build
+
 * Clone the repository `git clone git@github.com:joostvanveelen/lighter.git`
 * Build the phar file by running `php build.php`. The phar file will be created in "build/lighter.phar"
 * (optional, but recommended) Place "lighter.phar" in a folder that's in your path.

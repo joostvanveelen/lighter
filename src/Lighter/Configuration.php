@@ -24,15 +24,10 @@ class Configuration
     /**
      * Configuration constructor.
      *
-     * @param string|null $configurationFile
+     * @param string $configurationFile
      */
-    public function __construct(?string $configurationFile = null)
+    public function __construct(string $configurationFile)
     {
-        if ($configurationFile === null) {
-            $home = getenv('HOME');
-            $configurationFile = "{$home}/.lighter.yaml";
-        }
-
         $this->configurationFile = $configurationFile;
     }
 
@@ -54,6 +49,26 @@ class Configuration
         $this->load();
 
         $this->configuration['self-update'] = $config;
+    }
+
+    /**
+     * @return array
+     */
+    public function getShellConfig(): array
+    {
+        $this->load();
+
+        return array_key_exists('shell', $this->configuration) ? $this->configuration['shell'] : [];
+    }
+
+    /**
+     * @param array $config
+     */
+    public function setShellConfig(array $config)
+    {
+        $this->load();
+
+        $this->configuration['shell'] = $config;
     }
 
     /**

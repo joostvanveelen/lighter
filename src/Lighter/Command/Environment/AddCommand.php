@@ -116,10 +116,14 @@ class AddCommand extends Command
         if ($names) {
             $dependencies = new ChoiceQuestion(
                 'Environment dependencies (comma separate multiple options):',
-                array_merge(['(none)'], $names)
+                array_merge(['[none]'], $names)
             );
             $dependencies->setMultiselect(true);
             $config['dependencies'] = $helper->ask($input, $output, $dependencies);
+            $noneIndex = array_search('[none]', $config['dependencies']);
+            if ($noneIndex !== false) {
+                unset($config['dependencies'][$noneIndex]);
+            }
         } else {
             $config['dependencies'] = [];
         }

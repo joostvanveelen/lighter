@@ -175,6 +175,11 @@ class AddCommand extends Command
                 $path = null;
                 $output->writeln('<error>' . $e->getMessage() . '</error>');
             }
+
+            if (count($services) === 0) {
+                $path = null;
+                $output->writeln('<error>No docker-compose services detected!</error>');
+            }
         }
         while ($path === null);
 

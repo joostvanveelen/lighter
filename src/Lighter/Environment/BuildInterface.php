@@ -11,6 +11,8 @@ interface BuildInterface
 {
     /**
      * Builds the environment.
+     *
+     * @return bool true when the build succeeded.
      */
-    public function build(): void;
+    public function build(): bool;
 }

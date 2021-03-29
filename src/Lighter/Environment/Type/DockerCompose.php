@@ -204,10 +204,12 @@ class DockerCompose extends BaseType implements EnvironmentInterface, BuildInter
     /**
      * {@inheritDoc}
      */
-    public function build(): void
+    public function build(): bool
     {
         chdir($this->path);
-        $this->getShell()->exec('docker-compose build --parallel');
+        $shell = $this->getShell();
+        $shell->exec('docker-compose build --parallel');
+        return $shell->getStatus() === 0;
     }
 
     /**

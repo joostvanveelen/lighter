@@ -6,6 +6,7 @@ use Lighter\Environment\BuildInterface;
 use Lighter\Environment\EnvironmentManager;
 use Lighter\Environment\EnvironmentInterface;
 use Lighter\Environment\InitInterface;
+use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -98,7 +99,9 @@ class BuildCommand extends Command
         }
 
         $output->write('Building ' . $environment->getDescription() . '...');
-        $environment->build();
+        if (!$environment->build()) {
+            throw new RuntimeException("Environment {$environment->getName()} failed to build.");
+        }
         $output->writeln(' <info>Done</info>');
 
         if ($restart && $environment->isStarted()) {

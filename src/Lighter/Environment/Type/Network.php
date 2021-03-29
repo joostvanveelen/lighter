@@ -3,6 +3,7 @@
 namespace Lighter\Environment\Type;
 
 use Lighter\Environment\EnvironmentInterface;
+use Lighter\Shell;
 
 /**
  * Manage a network supporting the environments
@@ -24,11 +25,12 @@ class Network extends BaseType implements EnvironmentInterface
     /**
      * Network constructor.
      *
+     * @param Shell $shell
      * @param array $config
      */
-    public function __construct(array $config)
+    public function __construct(Shell $shell, array $config)
     {
-        parent::__construct($config);
+        parent::__construct($shell, $config);
         if (array_key_exists('networkName', $config)) {
             $this->networkName = $config['networkName'];
         }
@@ -40,7 +42,7 @@ class Network extends BaseType implements EnvironmentInterface
     public function start(): void
     {
         if (!$this->started) {
-            $this->getShell()->exec('docker network create ' . $this->networkName);
+            $this->shell->exec('docker network create ' . $this->networkName);
             $this->started = true;
         }
     }

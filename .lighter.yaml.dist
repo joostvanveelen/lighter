@@ -41,3 +41,8 @@ environments:
       - database-container
       - application-container
       - webserver-container
+
+shell:
+  # All shell commands are prefixed with this command. This allows inegration with existing tools that manage the
+  # (build) environment for the project.
+  preExec: ~

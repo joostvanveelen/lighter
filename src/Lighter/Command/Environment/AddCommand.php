@@ -30,14 +30,20 @@ class AddCommand extends Command
     private $configuration;
 
     /**
+     * @var Shell
+     */
+    private $shell;
+
+    /**
      * AddCommand constructor.
      *
      * @param Configuration $configuration
      */
-    public function __construct(Configuration $configuration)
+    public function __construct(Configuration $configuration, Shell $shell)
     {
         parent::__construct();
         $this->configuration = $configuration;
+        $this->shell = $shell;
     }
 
     /**
@@ -108,9 +114,16 @@ class AddCommand extends Command
 
         $names = $this->configuration->getEnvironmentNames();
         if ($names) {
-            $dependencies = new ChoiceQuestion('Environment dependencies (comma separate multiple options):', $names);
+            $dependencies = new ChoiceQuestion(
+                'Environment dependencies (comma separate multiple options):',
+                array_merge(['[none]'], $names)
+            );
             $dependencies->setMultiselect(true);
             $config['dependencies'] = $helper->ask($input, $output, $dependencies);
+            $noneIndex = array_search('[none]', $config['dependencies']);
+            if ($noneIndex !== false) {
+                unset($config['dependencies'][$noneIndex]);
+            }
         } else {
             $config['dependencies'] = [];
         }
@@ -159,12 +172,8 @@ class AddCommand extends Command
                 $path = $this->validatePath($givenPath);
                 $services = $this->getDockerComposeServices($path);
             } catch (RuntimeException $e) {
-                $output->writeln('<error>' . $e->getMessage() . '</error>');
-            }
-
-            if (!file_exists("{$path}/docker-compose.yml") && !file_exists("{$path}/docker-compose.yaml")) {
-                $output->writeln('<error>Docker-compose.yaml file not found.</error>');
                 $path = null;
+                $output->writeln('<error>' . $e->getMessage() . '</error>');
             }
         }
         while ($path === null);
@@ -180,12 +189,6 @@ class AddCommand extends Command
         if (in_array('[all]', $config['containers'], true)) {
             $config['containers'] = $services;
         }
-
-//        $shell = new ChoiceQuestion('Which container should be used to start a shell:', array_merge(['none'], $config['containers']));
-//        $config['shell'] = $helper->ask($input, $output, $shell);
-//        if ($config['shell'] === 'none') {
-//            unset($config['shell']);
-//        }
 
         $config['initContainers'] = [];
         do {
@@ -243,11 +246,10 @@ class AddCommand extends Command
     private function getDockerComposeServices(string $path): array
     {
         chdir($path);
-        $shell = new Shell();
-        if ($shell->exec('docker-compose config') !== 0) {
-            throw new RuntimeException('Error while retrieving docker-compose configuration: ' . $shell->getOutput());
+        if ($this->shell->exec('docker-compose config') !== 0) {
+            throw new RuntimeException('Error while retrieving docker-compose configuration: ' . $this->shell->getOutput());
         }
-        $dockerCompose = Yaml::parse($shell->getOutput());
+        $dockerCompose = Yaml::parse($this->shell->getOutput());
         $services = $dockerCompose['services'] ?? [];
 
         return array_keys($services);

@@ -1,4 +1,23 @@
 <?php
+
+//Check php requirements
+if (version_compare(PHP_VERSION, '7.2.0') === -1) {
+    echo 'Lighter requires PHP 7.2 or higher.' . PHP_EOL;
+    exit(1);
+}
+if (!extension_loaded('xml')) {
+    echo 'Lighter requires the XML extension.' . PHP_EOL;
+    exit(1);
+}
+if (!extension_loaded('mbstring')) {
+    echo 'Lighter requires the mbstring extension.' . PHP_EOL;
+    exit(1);
+}
+if (((bool)ini_get('phar.readonly')) !== false) {
+    echo 'Building lighter requires phar.readonly to be set to Off.' . PHP_EOL;
+    exit(1);
+}
+
 chdir(__DIR__);
 $pharFile = 'build/lighter.phar';
 if (file_exists($pharFile)) {
@@ -43,6 +62,8 @@ echo ' Done!' . PHP_EOL;
 echo 'Setting execute bits...';
 chmod($pharFile, 0770);
 echo ' Done!' . PHP_EOL;
+
+echo 'Build complete!' . PHP_EOL;
 
 /**
  * Copy a directory recursively, keeping the directory structure intact.

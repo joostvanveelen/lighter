@@ -259,21 +259,9 @@ class DockerCompose extends BaseType implements EnvironmentInterface, BuildInter
      */
     private function loadDockerComposeConfig(): array
     {
-        $dockerComposeFile = null;
-        $filenames = ['docker-compose.yaml', 'docker-compose.yml'];
-        foreach ($filenames as $filename) {
-            $path = $this->path . DIRECTORY_SEPARATOR . $filename;
-            if (file_exists($path)) {
-                $dockerComposeFile = $path;
-                break;
-            }
-        }
-
-        if ($dockerComposeFile === null) {
-            throw new RuntimeException('Docker-compose yaml file not found.');
-        }
-
-        $config = Yaml::parseFile($dockerComposeFile);
+        $shell = $this->getShell();
+        $shell->exec('docker-compose config');
+        $config = Yaml::parse($shell->getOutput());
 
         if (!is_array($config)) {
             throw new RuntimeException('Docker compose configuration parse error.');

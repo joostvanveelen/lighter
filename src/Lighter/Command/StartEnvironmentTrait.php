@@ -41,7 +41,13 @@ trait StartEnvironmentTrait
         $output->write('Starting ' . $environment->getDescription() . '...');
         $environment->start();
         if ($environment->hasError()) {
-            throw new RuntimeException("Environment {$environment->getName()} failed to start.");
+            $output->write('.');
+            $environment->stop();
+            $output->write('.');
+            $environment->start();
+            if ($environment->hasError()) {
+                throw new RuntimeException("Environment {$environment->getName()} failed to start.");
+            }
         }
         $startedEnvironments[] = $environment;
         $output->writeln(' <info>Done</info>');
